@@ -1,44 +1,113 @@
-CC = gcc
+ifeq ($(OS),Windows_NT)
+    DETECTED_OS := Windows
+    EXE_EXT := .exe
+    DLL_EXT := .dll
+    LIB_EXT := .lib
+    RM := rmdir /s /q
+    MKDIR := mkdir
+    PATH_SEP := \\
+else
+    DETECTED_OS := $(shell uname -s)
+    EXE_EXT :=
+    DLL_EXT := .so
+    LIB_EXT := .a
+    RM := rm -rf
+    MKDIR := mkdir -p
+    PATH_SEP := /
+endif
+
+ifeq ($(DETECTED_OS),Windows)
+    CC := gcc
+    SHARED_FLAGS := -shared -DC2BGEN_EXPORTS
+    DLL_LINK := -Wl,--out-implib,$(LIB_DIR)/c2bgen$(LIB_EXT)
+else
+    CC := gcc
+    SHARED_FLAGS := -shared -fPIC -DC2BGEN_EXPORTS
+    DLL_LINK := 
+endif
+
+# Update include flags to use relative paths
 CFLAGS = -Wall -Wextra -std=c99
-SHARED_FLAGS = -shared -DC2BGEN_EXPORTS
+
+ifdef DEBUG
+    CFLAGS += -g -DC2VM_DEBUG
+else
+    CFLAGS += -O2
+endif
+
+CFLAGS += -DVM_BUILD -I$(SRC_DIR)
+
 SRC_DIR = src
 BIN_DIR = bin
-OBJ_DIR = $(BIN_DIR)/objs
+OBJ_DIR = $(BIN_DIR)$(PATH_SEP)objs
 LIB_DIR = lib
 
-VM_SRCS = $(filter-out $(SRC_DIR)/c2bgen.c,$(wildcard $(SRC_DIR)/*.c))
+SRC_DIRS = $(SRC_DIR)/core $(SRC_DIR)/vm $(SRC_DIR)/interrupts $(SRC_DIR)/bytecode $(SRC_DIR)/syscalls
+VM_SRCS = $(filter-out $(SRC_DIR)/bytecode/c2bgen.c,$(wildcard $(SRC_DIRS:=/*.c)))
 VM_OBJS = $(VM_SRCS:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
-VM_TARGET = $(BIN_DIR)/c2vm.exe
+VM_TARGET = $(BIN_DIR)/c2vm$(EXE_EXT)
 
-LIB_SRCS = $(SRC_DIR)/c2bgen.c $(SRC_DIR)/opcodes.c
+LIB_SRCS = $(SRC_DIR)/bytecode/c2bgen.c $(SRC_DIR)/vm/opcodes.c
 LIB_OBJS = $(LIB_SRCS:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
-DLL_TARGET = $(BIN_DIR)/c2bgen.dll
-LIB_TARGET = $(LIB_DIR)/c2bgen.lib
+
+DLL_TARGET = $(BIN_DIR)/c2bgen$(DLL_EXT)
+LIB_TARGET = $(LIB_DIR)/c2bgen$(LIB_EXT)
+
+SRC_FILES = src/core/main.c \
+           src/vm/opcodes.c \
+           src/vm/registers.c \
+           src/vm/vm.c \
+           src/interrupts/interrupts.c \
+           src/bytecode/bytecode.c \
+           src/syscalls/syscalls.c 
+
+OBJ_FILES = $(patsubst src/%.c,bin/objs/%.o,$(SRC_FILES))
 
 all: directories $(VM_TARGET) $(DLL_TARGET) $(LIB_TARGET)
 
-directories:
-	@if not exist $(BIN_DIR) mkdir $(BIN_DIR)
-	@if not exist $(OBJ_DIR) mkdir $(OBJ_DIR)
-	@if not exist $(LIB_DIR) mkdir $(LIB_DIR)
-
+# Update pattern rule for object files
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
+ifeq ($(DETECTED_OS),Windows)
+	@if not exist "$(dir $@)" mkdir "$(dir $@)"
 	$(CC) $(CFLAGS) -c $< -o $@
+else
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) -c $< -o $@
+endif
+
+directories:
+ifeq ($(DETECTED_OS),Windows)
+	@if not exist "$(BIN_DIR)" mkdir "$(BIN_DIR)"
+	@if not exist "$(OBJ_DIR)\core" mkdir "$(OBJ_DIR)\core"
+	@if not exist "$(OBJ_DIR)\vm" mkdir "$(OBJ_DIR)\vm"
+	@if not exist "$(OBJ_DIR)\interrupts" mkdir "$(OBJ_DIR)\interrupts"
+	@if not exist "$(OBJ_DIR)\bytecode" mkdir "$(OBJ_DIR)\bytecode"
+	@if not exist "$(LIB_DIR)" mkdir "$(LIB_DIR)"
+else
+	@$(MKDIR) $(BIN_DIR)
+	@$(MKDIR) $(OBJ_DIR)
+	@$(MKDIR) $(LIB_DIR)
+endif
 
 $(VM_TARGET): $(VM_OBJS)
 	$(CC) $(VM_OBJS) -o $(VM_TARGET)
 
 $(DLL_TARGET): $(LIB_OBJS)
-	$(CC) $(SHARED_FLAGS) $(LIB_OBJS) -o $(DLL_TARGET) -Wl,--out-implib,$(LIB_TARGET)
+	$(CC) $(SHARED_FLAGS) $(LIB_OBJS) -o $(DLL_TARGET) $(DLL_LINK)
 
 $(LIB_TARGET): $(DLL_TARGET)
 
-debug: CFLAGS += -g -DC2VM_DEBUG
-debug: all
+debug:
+	$(MAKE) clean
+	$(MAKE) DEBUG=1 all
 
 clean:
-	@if exist $(BIN_DIR) rmdir /s /q $(BIN_DIR)
-	@if exist $(LIB_DIR) rmdir /s /q $(LIB_DIR)
+ifeq ($(DETECTED_OS),Windows)
+	@if exist "$(BIN_DIR)" $(RM) "$(BIN_DIR)"
+	@if exist "$(LIB_DIR)" $(RM) "$(LIB_DIR)"
+else
+	@if [ -d "$(BIN_DIR)" ]; then $(RM) "$(BIN_DIR)"; fi
+	@if [ -d "$(LIB_DIR)" ]; then $(RM) "$(LIB_DIR)"; fi
+endif
 
-.PHONY: all clean debug directories
 .PHONY: all clean debug directories

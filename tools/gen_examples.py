@@ -55,6 +55,61 @@ def generate_examples():
             (OpCode.LOAD, 0x01, 0),     # R1 = 0
             (OpCode.DIV,  0x00, 0x01),  # R0 /= R1 (error)
             OpCode.HALT
+        ],
+
+        "syscall_hello": [
+            # Print "Hello, World!\n"
+            (OpCode.LOAD, 0x00, 0x01),      # SYS_PUTCHAR
+            (OpCode.LOAD, 0x01, ord('H')),
+            (OpCode.SYSCALL,),
+            (OpCode.LOAD, 0x01, ord('e')),
+            (OpCode.SYSCALL,),
+            (OpCode.LOAD, 0x01, ord('l')),
+            (OpCode.SYSCALL,),
+            (OpCode.LOAD, 0x01, ord('l')),
+            (OpCode.SYSCALL,),
+            (OpCode.LOAD, 0x01, ord('o')),
+            (OpCode.SYSCALL,),
+            (OpCode.LOAD, 0x01, ord(',')),
+            (OpCode.SYSCALL,),
+            (OpCode.LOAD, 0x01, ord(' ')),
+            (OpCode.SYSCALL,),
+            (OpCode.LOAD, 0x01, ord('W')),
+            (OpCode.SYSCALL,),
+            (OpCode.LOAD, 0x01, ord('o')),
+            (OpCode.SYSCALL,),
+            (OpCode.LOAD, 0x01, ord('r')),
+            (OpCode.SYSCALL,),
+            (OpCode.LOAD, 0x01, ord('l')),
+            (OpCode.SYSCALL,),
+            (OpCode.LOAD, 0x01, ord('d')),
+            (OpCode.SYSCALL,),
+            (OpCode.LOAD, 0x01, ord('!')),
+            (OpCode.SYSCALL,),
+            (OpCode.LOAD, 0x01, ord('\n')),
+            (OpCode.SYSCALL,),
+            OpCode.HALT
+        ],
+
+        "syscall_echo": [
+            # Read char and echo it back until newline
+            (OpCode.LOAD, 0x00, 0x02),      # SYS_GETCHAR
+            (OpCode.SYSCALL,),              # Get char into R0
+            (OpCode.LOAD, 0x02, ord('\n')), # Load \n into R2
+            (OpCode.EQ, 0x00, 0x02),        # Compare with \n
+            (OpCode.JNZ, 12),               # Jump to HALT if newline
+            (OpCode.LOAD, 0x00, 0x01),      # SYS_PUTCHAR
+            (OpCode.SYSCALL,),              # Print the char
+            (OpCode.JMP, 0),                # Loop back to start
+            OpCode.HALT
+        ],
+
+        "syscall_exit": [
+            # Exit with status code 42
+            (OpCode.LOAD, 0x00, 0x00),      # SYS_EXIT
+            (OpCode.LOAD, 0x01, 42),        # Exit code 42
+            (OpCode.SYSCALL,),
+            OpCode.HALT                      # Should not reach here
         ]
     }
     

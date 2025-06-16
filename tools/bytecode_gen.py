@@ -29,6 +29,7 @@ class OpCode(IntEnum):
     RET = 0x16
     INT = 0x17
     IRET = 0x18
+    SYSCALL = 0x19  # Add SYSCALL opcode
 
 def generate_bytecode(instructions):
     bytecode = bytearray()

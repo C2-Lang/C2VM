@@ -1,0 +1,44 @@
+CC = gcc
+CFLAGS = -Wall -Wextra -std=c99
+SHARED_FLAGS = -shared -DC2BGEN_EXPORTS
+SRC_DIR = src
+BIN_DIR = bin
+OBJ_DIR = $(BIN_DIR)/objs
+LIB_DIR = lib
+
+VM_SRCS = $(filter-out $(SRC_DIR)/c2bgen.c,$(wildcard $(SRC_DIR)/*.c))
+VM_OBJS = $(VM_SRCS:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
+VM_TARGET = $(BIN_DIR)/c2vm.exe
+
+LIB_SRCS = $(SRC_DIR)/c2bgen.c $(SRC_DIR)/opcodes.c
+LIB_OBJS = $(LIB_SRCS:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
+DLL_TARGET = $(BIN_DIR)/c2bgen.dll
+LIB_TARGET = $(LIB_DIR)/c2bgen.lib
+
+all: directories $(VM_TARGET) $(DLL_TARGET) $(LIB_TARGET)
+
+directories:
+	@if not exist $(BIN_DIR) mkdir $(BIN_DIR)
+	@if not exist $(OBJ_DIR) mkdir $(OBJ_DIR)
+	@if not exist $(LIB_DIR) mkdir $(LIB_DIR)
+
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(VM_TARGET): $(VM_OBJS)
+	$(CC) $(VM_OBJS) -o $(VM_TARGET)
+
+$(DLL_TARGET): $(LIB_OBJS)
+	$(CC) $(SHARED_FLAGS) $(LIB_OBJS) -o $(DLL_TARGET) -Wl,--out-implib,$(LIB_TARGET)
+
+$(LIB_TARGET): $(DLL_TARGET)
+
+debug: CFLAGS += -g -DC2VM_DEBUG
+debug: all
+
+clean:
+	@if exist $(BIN_DIR) rmdir /s /q $(BIN_DIR)
+	@if exist $(LIB_DIR) rmdir /s /q $(LIB_DIR)
+
+.PHONY: all clean debug directories
+.PHONY: all clean debug directories

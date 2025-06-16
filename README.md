@@ -1,3 +1,5 @@
+![alt text](https://media.discordapp.net/attachments/1153973442824118323/1384273698655043675/c2vmLogo.png?ex=6851d4d8&is=68508358&hm=6c1b70ff2e75d5119dbf62f584b9ceb0764061758530f505c18ba7fe32ac6a21&=&format=webp&quality=lossless&width=625&height=625)
+
 # ⚙️ C² Virtual Machine (C2VM)
 
 A lightweight, 64-bit register-based virtual machine designed for the C² programming language.

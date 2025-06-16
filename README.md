@@ -1,4 +1,4 @@
-![alt text](https://media.discordapp.net/attachments/1153973442824118323/1384273698655043675/c2vmLogo.png?ex=6851d4d8&is=68508358&hm=6c1b70ff2e75d5119dbf62f584b9ceb0764061758530f505c18ba7fe32ac6a21&=&format=webp&quality=lossless&width=625&height=625)
+![alt text](https://cdn.discordapp.com/attachments/1153973442824118323/1384274565898829945/c2vmLogo.png?ex=6851d5a7&is=68508427&hm=d2f0e2956099bd0984ea46aff3aa7684a42460e1c4a3ef603de35090523e6049&)
 
 # ⚙️ C² Virtual Machine (C2VM)
 

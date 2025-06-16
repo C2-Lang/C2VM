@@ -62,6 +62,7 @@ C2VM provides a minimal yet powerful instruction set ideal for educational use, 
 | `EQ`     | `0x0E` | Compare: Equal           |
 | `LT`     | `0x0F` | Compare: Less Than       |
 | `GT`     | `0x10` | Compare: Greater Than    |
+| `SYSCAMM`| `0x19` | Syscall                  |  
 
 ---
 

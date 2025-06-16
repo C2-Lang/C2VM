@@ -3,7 +3,9 @@
 
 A lightweight, 64-bit register-based virtual machine designed for the C² programming language.
 C2VM provides a minimal yet powerful instruction set ideal for educational use, scripting, or embedding custom logic.
-![alt text](https://cdn.discordapp.com/attachments/1153973442824118323/1384274565898829945/c2vmLogo.png?ex=6851d5a7&is=68508427&hm=d2f0e2956099bd0984ea46aff3aa7684a42460e1c4a3ef603de35090523e6049&)
+<p align="center">
+  <img src= "https://cdn.discordapp.com/attachments/1153973442824118323/1384274565898829945/c2vmLogo.png?ex=6851d5a7&is=68508427&hm=d2f0e2956099bd0984ea46aff3aa7684a42460e1c4a3ef603de35090523e6049&"/>
+</p>
 ---
 
 ## 🚀 Features

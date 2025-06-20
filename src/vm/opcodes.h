@@ -13,13 +13,13 @@ typedef enum {
     OP_MUL = 0x08,
     OP_DIV = 0x09,
     OP_AND = 0x0A,
-    OP_OR  = 0x0B,
+    OP_OR = 0x0B,
     OP_XOR = 0x0C,
     OP_NOT = 0x0D,
-    OP_EQ  = 0x0E,
-    OP_LT  = 0x0F,
-    OP_GT  = 0x10,
-    OP_JZ  = 0x11,
+    OP_EQ = 0x0E,
+    OP_LT = 0x0F,
+    OP_GT = 0x10,
+    OP_JZ = 0x11,
     OP_JNZ = 0x12,
     OP_JGT = 0x13,
     OP_JLT = 0x14,
@@ -27,7 +27,10 @@ typedef enum {
     OP_RET = 0x16,
     OP_INT = 0x17,
     OP_IRET = 0x18,
-    OP_SYSCALL = 0x19  // New syscall opcode
+    OP_SYSCALL = 0x19,
+    OP_LOAD_TYPE = 0x1A,
+    OP_CAST = 0x1B,
+    OP_TYPE_EQ = 0x1C
 } OpCode;
 
 #endif

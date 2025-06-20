@@ -1,5 +1,7 @@
 import os
-from bytecode_gen import OpCode, generate_bytecode
+from bytecode_gen import *
+from vm_constants import *
+
 
 def ensure_directory(path):
     if not os.path.exists(path):
@@ -18,99 +20,201 @@ def generate_examples():
     
     examples = {
         "arithmetic": [
-            (OpCode.LOAD, 0x00, 10),    # R0 = 10
-            (OpCode.LOAD, 0x01, 5),     # R1 = 5
-            (OpCode.ADD,  0x00, 0x01),  # R0 += R1 (15)
+            (OpCode.LOAD, 0x00, 10),    
+            (OpCode.LOAD, 0x01, 5),     
+            (OpCode.ADD,  0x00, 0x01),  
             (OpCode.MUL,  0x00, 0x01), 
             (OpCode.MUL,  0x00, 0x01),
             OpCode.HALT
         ],
         
         "stack": [
-            (OpCode.LOAD, 0x00, 42),    # R0 = 42
-            (OpCode.PUSH, 0x00),        # Push R0
-            (OpCode.LOAD, 0x00, 24),    # R0 = 24
-            (OpCode.POP,  0x01),        # Pop into R1
+            (OpCode.LOAD, 0x00, 42),    
+            (OpCode.PUSH, 0x00),        
+            (OpCode.LOAD, 0x00, 24),    
+            (OpCode.POP,  0x01),        
             OpCode.HALT
         ],
         
         "logic": [
-            (OpCode.LOAD, 0x00, 0xFF),  # R0 = 255
-            (OpCode.LOAD, 0x01, 0x0F),  # R1 = 15
-            (OpCode.AND,  0x00, 0x01),  # R0 &= R1
-            (OpCode.NOT,  0x00),        # R0 = ~R0
+            (OpCode.LOAD, 0x00, 0xFF),  
+            (OpCode.LOAD, 0x01, 0x0F),  
+            (OpCode.AND,  0x00, 0x01),  
+            (OpCode.NOT,  0x00),        
             OpCode.HALT
         ],
         
         "compare": [
-            (OpCode.LOAD, 0x00, 100),   # R0 = 100
-            (OpCode.LOAD, 0x01, 50),    # R1 = 50
-            (OpCode.GT,   0x00, 0x01),  # R0 > R1?
-            (OpCode.EQ,   0x00, 0x01),  # R0 == R1?
+            (OpCode.LOAD, 0x00, 100),   
+            (OpCode.LOAD, 0x01, 50),    
+            (OpCode.GT,   0x00, 0x01),  
+            (OpCode.EQ,   0x00, 0x01),  
             OpCode.HALT
         ],
         
         "div_by_zero": [
-            (OpCode.LOAD, 0x00, 10),    # R0 = 10
-            (OpCode.LOAD, 0x01, 0),     # R1 = 0
-            (OpCode.DIV,  0x00, 0x01),  # R0 /= R1 (error)
+            (OpCode.LOAD, 0x00, 10),    
+            (OpCode.LOAD, 0x01, 0),     
+            (OpCode.DIV,  0x00, 0x01),  
             OpCode.HALT
         ],
 
         "syscall_hello": [
-            # Print "Hello, World!\n"
-            (OpCode.LOAD, 0x00, 0x01),      # SYS_PUTCHAR
+            
+            (OpCode.LOAD_TYPE, 0x00, ValueType.UINT64),
+            (OpCode.LOAD, 0x00, 0x01),      
+            (OpCode.LOAD_TYPE, 0x01, ValueType.INT64),
             (OpCode.LOAD, 0x01, ord('H')),
             (OpCode.SYSCALL,),
+            (OpCode.LOAD_TYPE, 0x01, ValueType.INT64),
             (OpCode.LOAD, 0x01, ord('e')),
             (OpCode.SYSCALL,),
+            (OpCode.LOAD_TYPE, 0x01, ValueType.INT64),
             (OpCode.LOAD, 0x01, ord('l')),
             (OpCode.SYSCALL,),
+            (OpCode.LOAD_TYPE, 0x01, ValueType.INT64),
             (OpCode.LOAD, 0x01, ord('l')),
             (OpCode.SYSCALL,),
+            (OpCode.LOAD_TYPE, 0x01, ValueType.INT64),
             (OpCode.LOAD, 0x01, ord('o')),
             (OpCode.SYSCALL,),
-            (OpCode.LOAD, 0x01, ord(',')),
-            (OpCode.SYSCALL,),
-            (OpCode.LOAD, 0x01, ord(' ')),
-            (OpCode.SYSCALL,),
-            (OpCode.LOAD, 0x01, ord('W')),
-            (OpCode.SYSCALL,),
-            (OpCode.LOAD, 0x01, ord('o')),
-            (OpCode.SYSCALL,),
-            (OpCode.LOAD, 0x01, ord('r')),
-            (OpCode.SYSCALL,),
-            (OpCode.LOAD, 0x01, ord('l')),
-            (OpCode.SYSCALL,),
-            (OpCode.LOAD, 0x01, ord('d')),
-            (OpCode.SYSCALL,),
-            (OpCode.LOAD, 0x01, ord('!')),
-            (OpCode.SYSCALL,),
+            (OpCode.LOAD_TYPE, 0x01, ValueType.INT64),
             (OpCode.LOAD, 0x01, ord('\n')),
             (OpCode.SYSCALL,),
             OpCode.HALT
         ],
 
         "syscall_echo": [
-            # Read char and echo it back until newline
-            (OpCode.LOAD, 0x00, 0x02),      # SYS_GETCHAR
-            (OpCode.SYSCALL,),              # Get char into R0
-            (OpCode.LOAD, 0x02, ord('\n')), # Load \n into R2
-            (OpCode.EQ, 0x00, 0x02),        # Compare with \n
-            (OpCode.JNZ, 12),               # Jump to HALT if newline
-            (OpCode.LOAD, 0x00, 0x01),      # SYS_PUTCHAR
-            (OpCode.SYSCALL,),              # Print the char
-            (OpCode.JMP, 0),                # Loop back to start
+            
+            (OpCode.LOAD_TYPE, 0x00, ValueType.UINT64),
+            (OpCode.LOAD, 0x00, 0x02),      
+            (OpCode.SYSCALL,),
+            (OpCode.LOAD_TYPE, 0x02, ValueType.INT64),
+            (OpCode.LOAD, 0x02, ord('\n')),
+            (OpCode.TYPE_EQ, 0x00, 0x02),
+            (OpCode.JNZ, 12),
+            (OpCode.LOAD_TYPE, 0x00, ValueType.UINT64),
+            (OpCode.LOAD, 0x00, 0x01),
+            (OpCode.SYSCALL,),
+            (OpCode.JMP, 0),
             OpCode.HALT
         ],
 
         "syscall_exit": [
-            # Exit with status code 42
-            (OpCode.LOAD, 0x00, 0x00),      # SYS_EXIT
-            (OpCode.LOAD, 0x01, 42),        # Exit code 42
+            
+            (OpCode.LOAD, 0x00, 0x00),      
+            (OpCode.LOAD, 0x01, 42),        
             (OpCode.SYSCALL,),
-            OpCode.HALT                      # Should not reach here
-        ]
+            OpCode.HALT                      
+        ],
+
+        "file_write": [
+            
+            (OpCode.LOAD_TYPE, 0x01, ValueType.INT64),
+            (OpCode.LOAD, 0x01, ord('t')),
+            (OpCode.STORE, 0x01, 0),
+            (OpCode.LOAD, 0x01, ord('e')),
+            (OpCode.STORE, 0x01, 1),
+            (OpCode.LOAD, 0x01, ord('s')),
+            (OpCode.STORE, 0x01, 2),
+            (OpCode.LOAD, 0x01, ord('t')),
+            (OpCode.STORE, 0x01, 3),
+            (OpCode.LOAD, 0x01, ord('.')),
+            (OpCode.STORE, 0x01, 4),
+            (OpCode.LOAD, 0x01, ord('t')),
+            (OpCode.STORE, 0x01, 5),
+            (OpCode.LOAD, 0x01, ord('x')),
+            (OpCode.STORE, 0x01, 6),
+            (OpCode.LOAD, 0x01, ord('t')),
+            (OpCode.STORE, 0x01, 7),
+            (OpCode.LOAD, 0x01, 0),
+            (OpCode.STORE, 0x01, 8),
+
+            
+            (OpCode.LOAD_TYPE, 0x00, ValueType.UINT64),
+            (OpCode.LOAD, 0x00, SYS_OPEN),
+            (OpCode.LOAD_TYPE, 0x01, ValueType.UINT64),
+            (OpCode.LOAD, 0x01, 0),           
+            (OpCode.LOAD_TYPE, 0x02, ValueType.UINT64),
+            (OpCode.LOAD, 0x02, 1),           
+            (OpCode.SYSCALL,),
+
+            
+            (OpCode.LOAD_TYPE, 0x01, ValueType.INT64),
+            (OpCode.LOAD, 0x01, ord('H')),
+            (OpCode.STORE, 0x01, 32),
+            (OpCode.LOAD, 0x01, ord('i')),
+            (OpCode.STORE, 0x01, 33),
+            (OpCode.LOAD, 0x01, ord('!')),
+            (OpCode.STORE, 0x01, 34),
+
+            
+            (OpCode.LOAD_TYPE, 0x00, ValueType.UINT64),
+            (OpCode.LOAD, 0x00, SYS_WRITE),
+            (OpCode.LOAD_TYPE, 0x01, ValueType.INT64),
+            (OpCode.ADD, 0x01, 0x00),        
+            (OpCode.LOAD_TYPE, 0x02, ValueType.UINT64),
+            (OpCode.LOAD, 0x02, 32),         
+            (OpCode.LOAD_TYPE, 0x03, ValueType.UINT64),
+            (OpCode.LOAD, 0x03, 3),          
+            (OpCode.SYSCALL,),
+
+            
+            (OpCode.LOAD_TYPE, 0x00, ValueType.UINT64),
+            (OpCode.LOAD, 0x00, SYS_CLOSE),
+            (OpCode.LOAD_TYPE, 0x01, ValueType.INT64),
+            (OpCode.ADD, 0x01, 0x00),
+            (OpCode.SYSCALL,),
+
+            OpCode.HALT
+        ],
+
+        "data_types": [
+            # Still haven't added the data sections yet
+        ],
+
+        "if_statement": [
+            (OpCode.LOAD_TYPE, 0x00, ValueType.UINT64),  
+            (OpCode.LOAD, 0x00, 2),                      
+            (OpCode.LOAD_TYPE, 0x01, ValueType.UINT64),  
+            (OpCode.LOAD, 0x01, 10),                      
+            (OpCode.GT, 0x00, 0x01),                     
+            (OpCode.JZ, 15),                             
+            
+            
+            (OpCode.LOAD_TYPE, 0x00, ValueType.UINT64),  
+            (OpCode.LOAD, 0x00, 0x01),                   
+            (OpCode.LOAD_TYPE, 0x01, ValueType.INT64),   
+            (OpCode.LOAD, 0x01, ord('A')),               
+            (OpCode.SYSCALL,),                           
+            (OpCode.JMP, 15),                            
+            
+            
+            (OpCode.LOAD_TYPE, 0x00, ValueType.UINT64),  
+            (OpCode.LOAD, 0x00, 0x01),                   
+            (OpCode.LOAD_TYPE, 0x01, ValueType.INT64),   
+            (OpCode.LOAD, 0x01, ord('B')),               
+            (OpCode.SYSCALL,),                           
+            
+            
+            (OpCode.LOAD_TYPE, 0x00, ValueType.UINT64),  
+            (OpCode.LOAD, 0x00, 0x01),                   
+            (OpCode.LOAD_TYPE, 0x01, ValueType.INT64),   
+            (OpCode.LOAD, 0x01, ord('\n')),              
+            (OpCode.SYSCALL,),                           
+            OpCode.HALT                                   
+        ],
+
+        "function_call": [
+            (OpCode.LOAD, 0x00, 7),
+            (OpCode.LOAD, 0x01, 5),
+            (OpCode.LOAD_TYPE, 0x00, ValueType.UINT64),
+            (OpCode.LOAD_TYPE, 0x01, ValueType.UINT64),
+            (OpCode.CALL, 0x16, 0x20, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00),
+            (OpCode.HALT,),
+            (OpCode.ADD, 0x00, 0x01),
+            (OpCode.RET,)
+        ],
     }
     
     for name, program in examples.items():

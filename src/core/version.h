@@ -25,11 +25,10 @@
     #define C2VM_ARCH "Unknown"
 #endif
 
-#define C2VM_VERSION    ("alpha v0.0.2 (" C2VM_PLATFORM "/" C2VM_ARCH ")")
+#define C2VM_VERSION    ("alpha v0.0.3 (" C2VM_PLATFORM "/" C2VM_ARCH ")")
 
 static const char* c2vmVer()
 {
     return C2VM_VERSION;
 }
-
 #endif

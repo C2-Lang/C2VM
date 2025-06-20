@@ -26,8 +26,9 @@ void int_handler_stack_underflow(VM* vm, uint8_t int_num) {
 }
 
 void int_handler_invalid_memory(VM* vm, uint8_t int_num) {
-    printf("Error: Invalid memory access (interrupt %d)\n", int_num);
+    printf("Invalid memory access (interrupt %d)\n", int_num);
     vm->running = false;
+    vm->error_code = VM_ERROR_INVALID_MEMORY_ACCESS;
 }
 
 void vm_init_default_interrupts(VM* vm) {

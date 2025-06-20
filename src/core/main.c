@@ -1,56 +1,42 @@
-#include <stdint.h>
-#include <stdio.h>
-#include <string.h>
 #include "../vm/vm.h"
+#include "../vm/opcodes.h"
 #include "../interrupts/interrupts.h"
+#include "../syscalls/syscalls.h"
 #include "../bytecode/bytecode.h"
 #include "version.h"
+#include "args.h"
+#include <stdio.h>
+#include <string.h>
 
-int main(int argc, char *argv[]) {
+int main(int argc, char** argv) {
+    if(ck_args(argc, argv) == 1) return 1;
     printf("C2VM %s\n", c2vmVer());
     
-    if (argc < 2) {
-        printf("\x1b[33mUsage: %s <file.c2b>\x1b[0m\n", argv[0]);
-        return 1;
-    }
-
-    if(strcmp(argv[1], "--version") == 0) {
-        printf("\x1b[32mC to the power of 2 Virtual Machine Version: %s\x1b[0m\n", c2vmVer());
-        return 0;
-    }
-
-    #ifdef C2VM_DEBUG
-        printf("C2VM starting in DEBUG mode\n");
-    #endif
-
     if (argc != 2) {
-        printf("\x1b[33mUsage: %s <file.c2b>\x1b[0m\n", argv[0]);
+        printf("Usage: %s <bytecode_file>\n", argv[0]);
+        return 1;
+    }
+    
+    VM* vm = vm_create();
+    if (!vm) {
+        printf("Failed to create VM\n");
         return 1;
     }
 
-    VM* vm = vm_create();
     vm_init_default_interrupts(vm);
-    
-    #ifdef C2VM_DEBUG
-        printf("Loading bytecode file: %s\n", argv[1]);
-    #endif
+    vm_init_syscalls(vm);
 
     if (!vm_load_bytecode(vm, argv[1])) {
-        printf("Error: Could not load bytecode file %s\n", argv[1]);
+        printf("Failed to load bytecode from %s\n", argv[1]);
         vm_destroy(vm);
         return 1;
     }
 
-    #ifdef C2VM_DEBUG
-        printf("Starting VM execution\n");
-    #endif
-
     vm_execute(vm);
     
-    #ifdef C2VM_DEBUG
-        printf("VM execution completed\n");
-    #endif
-
+    int error = vm_get_error(vm);
+    if (error != VM_ERROR_NONE) fflush(stdout);  
+    
     vm_destroy(vm);
-    return 0;
+    return error;
 }

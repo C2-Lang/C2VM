@@ -2,12 +2,13 @@
 #define _REGISTERS_H
 
 #include <stdint.h>
+#include "types.h"
 
 struct Registers {
-    uint64_t r0;
-    uint64_t r1;
-    uint64_t r2;
-    uint64_t r3;
+    TypedValue r0;
+    TypedValue r1;
+    TypedValue r2;
+    TypedValue r3;
     uint64_t ip;
     uint64_t sp;
     uint64_t bp;
